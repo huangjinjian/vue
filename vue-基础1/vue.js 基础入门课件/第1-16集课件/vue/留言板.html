@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script src="./src/vue.js"></script>
+</head>
+<body>
+  
+  <div id="app">
+    <div>
+        如下演示的是一个留言板的发送。
+    </div>
+    <ul>
+      <li v-for='item,index in msgList' :key='index'>
+        {{item}}
+      </li>
+    </ul>
+    <div>
+      <input type="text" v-model="msg">
+    </div>
+    <button @click='sendMsg'>留言</button>
+  </div>
+  
+  
+  <script>
+    
+    let vm = new Vue({
+      el:'#app',
+      data:{
+        msgList:['这是我的第一次留言'],
+        msg:'',
+      },
+      methods: {
+        sendMsg(){
+          if(this.msg){
+            this.msgList.push(this.msg)
+            this.msg = ''
+          }else{
+            alert('留言不能为空')
+          }
+        }
+      },
+    })
+  </script>
+</body>
+</html>

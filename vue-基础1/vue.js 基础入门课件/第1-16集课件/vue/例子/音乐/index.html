@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="../src/vue.js"></script>
+    <style>
+        .b {
+            width: 800px;
+        }
+        
+        .item {
+            height: 45px;
+            line-height: 45px;
+            display: flex;
+        }
+        
+        .item div,
+        .item span {
+            flex: 1;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <ul class="b">
+            <li class="item">
+                <div>
+                    <input type="checkbox" v-model="chooseAll">全选
+                </div>
+                <span>歌手</span>
+                <span>专辑</span>
+            </li>
+            <li class="item" v-for="item,index in list" :key='index'>
+                <span>
+                    <input type="checkbox" v-model="item.choose" @change="count">
+                </span>
+                <span>{{item.singer}}</span>
+                <span>{{item.special}}</span>
+            </li>
+            <li class="item">
+                <span>统计</span>
+                <span>歌手有: {{singers}} 位</span>
+                <span>专辑有: {{specials}}张</span>
+            </li>
+        </ul>
+    </div>
+    <script>
+        let list = [{
+            singer: '刘德华',
+            special: 10,
+            choose: false
+        }, {
+            singer: '古天乐',
+            special: 22,
+            choose: false
+        }, {
+            singer: '古天乐',
+            special: 25,
+            choose: false
+        }, {
+            singer: '邓紫棋',
+            special: 14,
+            choose: false
+        }]
+
+        /*
+            list      歌手数据
+            singers   已选的歌手总数
+            specials  已选歌手专辑的总数
+        */
+        let vm = new Vue({
+            el: '#app',
+            data: {
+                list,
+                singers: 0,
+                specials: 0,
+            },
+            methods: {
+                count() {
+                    this.singers = 0;
+                    this.specials = 0;
+                    this.list.forEach(item => {
+                        if (item.choose) {
+                            this.singers += 1;
+                            this.specials += item.special
+                        }
+                    })
+                },
+                clickMe() {
+                    console.log(123);
+                }
+            },
+            computed: {
+                chooseAll: {
+                    get() {
+                        return this.list.every((item) => {
+                            return item.choose
+                        })
+                    },
+                    set(newV) {
+                        this.list.forEach((item) => {
+                            item.choose = newV;
+                            return item
+                        });
+                        this.count()
+                    }
+                }
+            },
+        })
+    </script>
+</body>
+
+</html>

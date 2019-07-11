@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        body {
+            color: #808080
+        }
+        
+        #app {
+            width: 900px;
+            margin: 0px auto;
+        }
+        
+        .refer-i input {
+            width: 100%;
+            height: 35px;
+            line-height: 35px;
+            margin-bottom: 15px;
+        }
+        
+        .red {
+            color: red;
+        }
+        
+        .task-s {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .task-type span {
+            display: inline-block;
+            width: 120px;
+        }
+        
+        .task-item {
+            line-height: 35px;
+            height: 35px;
+        }
+        
+        .task-item-d {
+            display: flex;
+            justify-content: space-between;
+            box-sizing: border-box;
+            padding-right: 40px;
+        }
+        
+        .task-detail {
+            flex: 1;
+        }
+        
+        .task-finish {
+            text-decoration: line-through;
+            background: #eaeaea;
+        }
+        
+        .del {
+            cursor: pointer;
+            display: none;
+        }
+        
+        .task-item:hover {
+            background: rgb(235, 232, 232, 0.5);
+        }
+        
+        .task-item:hover .del {
+            display: block
+        }
+        
+        .edit-i {
+            display: none;
+            width: 100%;
+            height: 80%;
+        }
+        /* 编辑 */
+        
+        .task-item-active div {
+            display: none;
+        }
+        
+        .task-item-active .edit-i {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <h3>添加内容:</h3>
+        <div class="refer-i">
+            <input type="text" placeholder="例如:吃饭睡觉打豆豆" v-model="editing" @keyup.enter="add">
+        </div>
+        <div class="task-s">
+            <div class="red"> 个未完成的任务</div>
+            <div class="task-type">
+                <span @click="chooseType('all')">所有任务</span>
+                <span @click="chooseType('noFinish')">未完成的任务</span>
+                <span @click="chooseType('finish')">完成的任务</span>
+            </div>
+        </div>
+        <h3>任务列表</h3>
+        <ul class="task-list">
+            <li class="task-item" :class='[ editIndex == index ? "task-item-active" : ""]' v-for="item,index in list" :key="index">
+                <div class="task-item-d">
+                    <span class="task-detail" @dblclick="edit(index)" :class='[ item.finish ? "task-finish" : ""]'>{{item.msg}}</span>
+                    <span class="del" @click="del(item.id)">X</span>
+                </div>
+                <input type="text" v-model="item.msg" class="edit-i" v-focus='editIndex == index' @blur="blur" @keyup.esc="cancel">
+            </li>
+        </ul>
+    </div>
+    <script src="./vue.js"></script>
+    <script>
+        // let list = [
+        // 	{
+        // 		msg : '2',
+        // 		finish:false,
+        // 	}
+        // ]
+
+        let filterFn = {
+            all(list) {
+                return list
+            },
+            finish(list) {
+                return list.filter((item) => {
+                    return item.finish
+                })
+            },
+            noFinish(list) {
+                return list.filter((item) => {
+                    return !item.finish
+                })
+            }
+        }
+
+        let allList = []
+
+        let vm = new Vue({
+            el: '#app',
+            data: {
+                allList: [],
+                editing: '',
+                list: [],
+                editIndex: -1,
+                editBefore: '',
+                type: 'all',
+                num: 0,
+            },
+            methods: {
+                sort() {
+                    allList.forEach((item, index) => {
+                        item.id = index
+                        return item
+                    });
+                },
+                chooseType(type) {
+                    this.type = type
+                    this.filter()
+                },
+                filter() {
+                    console.log(filterFn[this.type](allList));
+                    this.list = filterFn[this.type](allList) ? filterFn[this.type](allList) : []
+                },
+                add() { // 增加 任务
+                    if (this.editing) {
+                        this.num++;
+                        if (this.num % 3 == 0) {
+                            allList.push({
+                                msg: this.editing,
+                                finish: true
+                            })
+                        } else {
+                            allList.push({
+                                msg: this.editing,
+                                finish: false
+                            })
+                        }
+                        this.sort()
+                        this.filter()
+                        this.editing = ''
+                    } else {
+                        alert('不能为空')
+                    }
+                },
+                del(id) { //删除任务
+                    let delIndex = allList.findIndex((item, index) => {
+                        if (item.id == id) {
+                            return index
+                        }
+                    });
+                    allList.splice(delIndex, 1);
+                    this.filter()
+                },
+                edit(index) { // 双击事件   编辑
+                    if (!this.list[index]['finish']) {
+                        this.editIndex = index
+                        this.editBefore = this.list[index]['msg']
+                    }
+                },
+                blur() { //失去光标 2种情况  1 取消 2 编辑完成
+                    if (this.editIndex == -1) {
+                        //cancel 取消了
+                    } else {
+                        if (!this.list[this.editIndex]['msg']) {
+                            this.cancel()
+                        } else {
+                            this.finish()
+                        }
+                    }
+                },
+                finish() {
+                    this.editIndex = -1;
+                },
+                cancel() {
+                    console.log('取消编辑');
+                    this.list[this.editIndex]['msg'] = this.editBefore
+                    this.editIndex = -1;
+                }
+            },
+            directives: {
+                focus: {
+                    update(el, binding) {
+                        if (binding.value) {
+                            el.focus()
+                        }
+                    }
+                }
+            }
+        })
+    </script>
+</body>
+
+</html>
